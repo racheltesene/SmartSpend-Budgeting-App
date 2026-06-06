@@ -13,19 +13,24 @@ body {
 
 header {
   margin-bottom: 30px;
+  text-align: center;
 }
 
 header h1 {
   margin: 0;
   font-size: 42px;
   color: #f8fafc;
+  line-height: 1.1;
 }
 
 header p {
+  margin-top: 14px;
   color: #94a3b8;
+  font-size: 18px;
 }
 
-.cards {
+.cards,
+.stats-panel {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
@@ -33,7 +38,8 @@ header p {
 }
 
 .card,
-.stat-card {
+.stat-card,
+.budget-panel {
   background: #1e293b;
   padding: 22px;
   border-radius: 14px;
@@ -71,6 +77,60 @@ header p {
 
 .filter-panel label {
   margin: 0;
+}
+
+.budget-panel {
+  margin-bottom: 25px;
+}
+
+.budget-panel h2 {
+  margin-top: 0;
+}
+
+.budget-panel p {
+  color: #cbd5e1;
+}
+
+.budget-form {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  margin: 15px 0;
+}
+
+.budget-form input {
+  flex: 1;
+}
+
+.budget-summary {
+  margin-top: 15px;
+}
+
+.budget-summary p {
+  margin: 6px 0;
+}
+
+.over-budget {
+  color: #f87171;
+  font-weight: bold;
+}
+
+.budget-track {
+  height: 24px;
+  background: #334155;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.budget-fill {
+  height: 100%;
+  background: #22c55e;
+  border-radius: 12px;
+}
+
+.budget-fill.danger {
+  background: #ef4444;
 }
 
 .main-content {
@@ -172,13 +232,6 @@ form button {
   gap: 8px;
 }
 
-.stats-panel {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  margin-bottom: 25px;
-}
-
 .chart-panel {
   margin-top: 25px;
 }
@@ -227,7 +280,8 @@ form button {
     grid-template-columns: 1fr;
   }
 
-  .filter-panel {
+  .filter-panel,
+  .budget-form {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -243,4 +297,31 @@ form button {
   .bar-row {
     grid-template-columns: 1fr;
   }
+}
+
+.budget-message {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.budget-message.neutral {
+  background: #334155;
+  color: #e5e7eb;
+}
+
+.budget-message.success {
+  background: #14532d;
+  color: #bbf7d0;
+}
+
+.budget-message.warning {
+  background: #78350f;
+  color: #fde68a;
+}
+
+.budget-message.danger {
+  background: #7f1d1d;
+  color: #fecaca;
 }

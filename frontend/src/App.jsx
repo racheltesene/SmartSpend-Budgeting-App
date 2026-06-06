@@ -5,8 +5,10 @@ function App() {
   const today = new Date().toISOString().split("T")[0];
 
   const [transactions, setTransactions] = useState([]);
+  const [budgets, setBudgets] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("All Months");
+  const [budgetAmount, setBudgetAmount] = useState("");
 
   const [formData, setFormData] = useState({
     amount: "",
@@ -23,9 +25,40 @@ function App() {
       .catch((error) => console.error("Error fetching transactions:", error));
   };
 
+  const fetchBudgets = () => {
+    fetch("http://localhost:5000/budgets")
+      .then((response) => response.json())
+      .then((data) => setBudgets(data))
+      .catch((error) => console.error("Error fetching budgets:", error));
+  };
+
   useEffect(() => {
     fetchTransactions();
+    fetchBudgets();
   }, []);
+
+  const formatMonth = (transactionDate) => {
+    const date = new Date(transactionDate);
+    return date.toLocaleString("default", {
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const availableMonths = [
+    "All Months",
+    ...new Set(
+      transactions.map((transaction) => formatMonth(transaction.transaction_date))
+    ),
+  ];
+
+  const filteredTransactions =
+    selectedMonth === "All Months"
+      ? transactions
+      : transactions.filter(
+          (transaction) =>
+            formatMonth(transaction.transaction_date) === selectedMonth
+        );
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -81,25 +114,28 @@ function App() {
     fetchTransactions();
   };
 
-  const formatMonth = (transactionDate) => {
-    const date = new Date(transactionDate);
-    return date.toLocaleString("default", {
-      month: "short",
-      year: "numeric",
+  const handleBudgetSubmit = async (e) => {
+    e.preventDefault();
+
+    if (selectedMonth === "All Months") {
+      alert("Please choose a specific month before setting a budget.");
+      return;
+    }
+
+    await fetch("http://localhost:5000/budgets", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        month: selectedMonth,
+        budget_amount: budgetAmount,
+      }),
     });
+
+    setBudgetAmount("");
+    fetchBudgets();
   };
-
-  const availableMonths = [
-    "All Months",
-    ...new Set(transactions.map((transaction) => formatMonth(transaction.transaction_date))),
-  ];
-
-  const filteredTransactions =
-    selectedMonth === "All Months"
-      ? transactions
-      : transactions.filter(
-          (transaction) => formatMonth(transaction.transaction_date) === selectedMonth
-        );
 
   const income = filteredTransactions
     .filter((t) => t.transaction_type === "Income")
@@ -110,6 +146,39 @@ function App() {
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const balance = income - expenses;
+
+  const selectedBudget = budgets.find((budget) => budget.month === selectedMonth);
+
+  const currentBudget =
+    selectedMonth !== "All Months" && selectedBudget
+      ? Number(selectedBudget.budget_amount)
+      : 0;
+
+  const remainingBudget = currentBudget - expenses;
+
+  const budgetPercent =
+    currentBudget > 0 ? Math.min((expenses / currentBudget) * 100, 100) : 0;
+
+  let budgetMessage = "Select a month and set a budget to receive budget feedback.";
+  let budgetMessageClass = "budget-message neutral";
+
+  if (selectedMonth !== "All Months" && currentBudget > 0) {
+    if (expenses === 0) {
+      budgetMessage = "No expenses recorded for this month yet.";
+      budgetMessageClass = "budget-message neutral";
+    } else if (expenses > currentBudget) {
+      budgetMessage = `Budget exceeded by $${Math.abs(remainingBudget).toFixed(
+        2
+      )}.`;
+      budgetMessageClass = "budget-message danger";
+    } else if (budgetPercent >= 90) {
+      budgetMessage = "Warning: You are close to reaching your budget limit.";
+      budgetMessageClass = "budget-message warning";
+    } else {
+      budgetMessage = "You are currently within your monthly budget.";
+      budgetMessageClass = "budget-message success";
+    }
+  }
 
   const monthlyTotals = transactions.reduce((acc, transaction) => {
     if (transaction.transaction_type === "Expense") {
@@ -190,6 +259,50 @@ function App() {
             </option>
           ))}
         </select>
+      </section>
+
+      <section className="budget-panel">
+        <div>
+          <h2>Monthly Budget Tracker</h2>
+          <p>
+            {selectedMonth === "All Months"
+              ? "Select a specific month to set or view a budget."
+              : `Budget for ${selectedMonth}`}
+          </p>
+        </div>
+
+        <form onSubmit={handleBudgetSubmit} className="budget-form">
+          <input
+            type="number"
+            placeholder="Enter monthly budget"
+            value={budgetAmount}
+            onChange={(e) => setBudgetAmount(e.target.value)}
+            required
+          />
+          <button type="submit">Save Budget</button>
+        </form>
+
+        {selectedMonth !== "All Months" && (
+          <div className="budget-summary">
+            <p>Budget: ${currentBudget.toFixed(2)}</p>
+            <p>Spent: ${expenses.toFixed(2)}</p>
+            <p>
+              Remaining:{" "}
+              <span className={remainingBudget < 0 ? "over-budget" : ""}>
+                ${remainingBudget.toFixed(2)}
+              </span>
+            </p>
+
+            <div className="budget-track">
+              <div
+                className={remainingBudget < 0 ? "budget-fill danger" : "budget-fill"}
+                style={{ width: `${budgetPercent}%` }}
+              ></div>
+            </div>
+
+            <p className={budgetMessageClass}>{budgetMessage}</p>
+          </div>
+        )}
       </section>
 
       <section className="main-content">
