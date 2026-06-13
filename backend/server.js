@@ -111,6 +111,33 @@ app.post("/budgets", async (req, res) => {
   }
 });
 
+
+app.get("/savings-goals", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM savings_goals ORDER BY id DESC");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+app.post("/savings-goals", async (req, res) => {
+  try {
+    const { goal_name, target_amount } = req.body;
+
+    const result = await pool.query(
+      "INSERT INTO savings_goals (goal_name, target_amount, current_amount) VALUES ($1, $2, 0) RETURNING *",
+      [goal_name, target_amount]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
 app.put("/savings-goals/:id/contribute", async (req, res) => {
   try {
     const { id } = req.params;
@@ -140,6 +167,19 @@ app.put("/savings-goals/:id/contribute", async (req, res) => {
     );
 
     res.json(goal);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+app.delete("/savings-goals/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await pool.query("DELETE FROM savings_goals WHERE id = $1", [id]);
+
+    res.json({ message: "Savings goal deleted" });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
