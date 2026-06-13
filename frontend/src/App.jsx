@@ -6,9 +6,17 @@ function App() {
 
   const [transactions, setTransactions] = useState([]);
   const [budgets, setBudgets] = useState([]);
+  const [savingsGoals, setSavingsGoals] = useState([]);
+
   const [editingId, setEditingId] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("All Months");
   const [budgetAmount, setBudgetAmount] = useState("");
+
+  const [goalName, setGoalName] = useState("");
+  const [targetAmount, setTargetAmount] = useState("");
+  const [selectedGoalId, setSelectedGoalId] = useState("");
+  const [contributionAmount, setContributionAmount] = useState("");
+  const [contributionDate, setContributionDate] = useState(today);
 
   const [formData, setFormData] = useState({
     amount: "",
@@ -32,9 +40,17 @@ function App() {
       .catch((error) => console.error("Error fetching budgets:", error));
   };
 
+  const fetchSavingsGoals = () => {
+    fetch("http://localhost:5000/savings-goals")
+      .then((response) => response.json())
+      .then((data) => setSavingsGoals(data))
+      .catch((error) => console.error("Error fetching savings goals:", error));
+  };
+
   useEffect(() => {
     fetchTransactions();
     fetchBudgets();
+    fetchSavingsGoals();
   }, []);
 
   const formatMonth = (transactionDate) => {
@@ -48,7 +64,9 @@ function App() {
   const availableMonths = [
     "All Months",
     ...new Set(
-      transactions.map((transaction) => formatMonth(transaction.transaction_date))
+      transactions.map((transaction) =>
+        formatMonth(transaction.transaction_date)
+      )
     ),
   ];
 
@@ -137,6 +155,61 @@ function App() {
     fetchBudgets();
   };
 
+  const handleSavingsGoalSubmit = async (e) => {
+    e.preventDefault();
+
+    await fetch("http://localhost:5000/savings-goals", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        goal_name: goalName,
+        target_amount: targetAmount,
+      }),
+    });
+
+    setGoalName("");
+    setTargetAmount("");
+    fetchSavingsGoals();
+  };
+
+  const handleContributionSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!selectedGoalId) {
+      alert("Please choose a savings goal.");
+      return;
+    }
+
+    await fetch(
+      `http://localhost:5000/savings-goals/${selectedGoalId}/contribute`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contribution_amount: contributionAmount,
+          contribution_date: contributionDate,
+        }),
+      }
+    );
+
+    setContributionAmount("");
+    setContributionDate(today);
+    fetchSavingsGoals();
+    fetchTransactions();
+  };
+
+  const handleDeleteSavingsGoal = async (id) => {
+    await fetch(`http://localhost:5000/savings-goals/${id}`, {
+      method: "DELETE",
+    });
+
+    fetchSavingsGoals();
+  };
+
   const income = filteredTransactions
     .filter((t) => t.transaction_type === "Income")
     .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -196,6 +269,24 @@ function App() {
   const maxMonthlyAmount =
     monthlyChartData.length > 0
       ? Math.max(...monthlyChartData.map((item) => item.amount))
+      : 0;
+
+  const categoryTotals = filteredTransactions.reduce((acc, transaction) => {
+    if (transaction.transaction_type === "Expense") {
+      acc[transaction.category] =
+        (acc[transaction.category] || 0) + Number(transaction.amount);
+    }
+    return acc;
+  }, {});
+
+  const categoryChartData = Object.keys(categoryTotals).map((category) => ({
+    category,
+    amount: categoryTotals[category],
+  }));
+
+  const maxCategoryAmount =
+    categoryChartData.length > 0
+      ? Math.max(...categoryChartData.map((item) => item.amount))
       : 0;
 
   const filteredExpenseTransactions = filteredTransactions.filter(
@@ -331,6 +422,7 @@ function App() {
               <option>Entertainment</option>
               <option>School</option>
               <option>Paycheck</option>
+              <option>Savings</option>
               <option>Other</option>
             </select>
 
@@ -430,6 +522,146 @@ function App() {
           <h3>Transactions Shown</h3>
           <p>{transactionsInSelectedView}</p>
         </div>
+      </section>
+
+      <section className="panel chart-panel">
+        <h2>Category Spending Breakdown</h2>
+
+        {categoryChartData.length === 0 ? (
+          <p>No expense data for the selected month.</p>
+        ) : (
+          <div className="bar-chart">
+            {categoryChartData.map((item) => (
+              <div className="bar-row" key={item.category}>
+                <div className="bar-label">{item.category}</div>
+
+                <div className="bar-track">
+                  <div
+                    className="category-bar-fill"
+                    style={{
+                      width: `${(item.amount / maxCategoryAmount) * 100}%`,
+                    }}
+                  ></div>
+                </div>
+
+                <div className="bar-amount">${item.amount.toFixed(2)}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="panel savings-panel">
+        <h2>Savings Goals</h2>
+
+        <div className="savings-forms">
+          <form onSubmit={handleSavingsGoalSubmit}>
+            <h3>Create Goal</h3>
+
+            <label>Goal Name</label>
+            <input
+              type="text"
+              value={goalName}
+              onChange={(e) => setGoalName(e.target.value)}
+              placeholder="Example: New Laptop"
+              required
+            />
+
+            <label>Target Amount</label>
+            <input
+              type="number"
+              value={targetAmount}
+              onChange={(e) => setTargetAmount(e.target.value)}
+              required
+            />
+
+            <button type="submit">Create Savings Goal</button>
+          </form>
+
+          <form onSubmit={handleContributionSubmit}>
+            <h3>Add Contribution</h3>
+
+            <label>Choose Goal</label>
+            <select
+              value={selectedGoalId}
+              onChange={(e) => setSelectedGoalId(e.target.value)}
+              required
+            >
+              <option value="">Select a goal</option>
+              {savingsGoals.map((goal) => (
+                <option key={goal.id} value={goal.id}>
+                  {goal.goal_name}
+                </option>
+              ))}
+            </select>
+
+            <label>Contribution Amount</label>
+            <input
+              type="number"
+              value={contributionAmount}
+              onChange={(e) => setContributionAmount(e.target.value)}
+              required
+            />
+
+            <label>Contribution Date</label>
+            <input
+              type="date"
+              value={contributionDate}
+              onChange={(e) => setContributionDate(e.target.value)}
+              required
+            />
+
+            <button type="submit">Add Contribution</button>
+          </form>
+        </div>
+
+        {savingsGoals.length === 0 ? (
+          <p>No savings goals yet.</p>
+        ) : (
+          <div className="savings-list">
+            {savingsGoals.map((goal) => {
+              const progress =
+                Number(goal.target_amount) > 0
+                  ? Math.min(
+                      (Number(goal.current_amount) /
+                        Number(goal.target_amount)) *
+                        100,
+                      100
+                    )
+                  : 0;
+
+              return (
+                <div className="savings-goal" key={goal.id}>
+                  <div className="savings-header">
+                    <div>
+                      <strong>{goal.goal_name}</strong>
+                      <p>
+                        ${Number(goal.current_amount).toFixed(2)} / $
+                        {Number(goal.target_amount).toFixed(2)}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteSavingsGoal(goal.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+
+                  <div className="savings-track">
+                    <div
+                      className="savings-fill"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+
+                  <small>{progress.toFixed(1)}% complete</small>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <section className="panel chart-panel">

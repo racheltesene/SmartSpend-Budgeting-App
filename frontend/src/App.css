@@ -325,3 +325,83 @@ form button {
   background: #7f1d1d;
   color: #fecaca;
 }
+
+.category-bar-fill {
+  height: 100%;
+  background: #a855f7;
+  border-radius: 12px;
+}
+
+.savings-panel {
+  margin-top: 25px;
+}
+
+.savings-forms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-bottom: 25px;
+}
+
+.savings-forms h3 {
+  margin-bottom: 8px;
+  color: #f8fafc;
+}
+
+.savings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.savings-goal {
+  background: #0f172a;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.savings-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.savings-header strong {
+  color: #f8fafc;
+  font-size: 18px;
+}
+
+.savings-header p {
+  margin: 5px 0;
+  color: #94a3b8;
+}
+
+.savings-track {
+  height: 24px;
+  background: #334155;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.savings-fill {
+  height: 100%;
+  background: #22c55e;
+  border-radius: 12px;
+}
+
+.savings-goal small {
+  color: #94a3b8;
+}
+
+@media (max-width: 800px) {
+  .savings-forms {
+    grid-template-columns: 1fr;
+  }
+
+  .savings-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

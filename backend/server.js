@@ -111,6 +111,41 @@ app.post("/budgets", async (req, res) => {
   }
 });
 
+app.put("/savings-goals/:id/contribute", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { contribution_amount, contribution_date } = req.body;
+
+    const goalResult = await pool.query(
+      `UPDATE savings_goals
+       SET current_amount = current_amount + $1
+       WHERE id = $2
+       RETURNING *`,
+      [contribution_amount, id]
+    );
+
+    const goal = goalResult.rows[0];
+
+    await pool.query(
+      `INSERT INTO transactions
+      (amount, category, transaction_type, description, transaction_date)
+      VALUES ($1, $2, $3, $4, $5)`,
+      [
+        contribution_amount,
+        "Savings",
+        "Expense",
+        `Savings contribution to ${goal.goal_name}`,
+        contribution_date,
+      ]
+    );
+
+    res.json(goal);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
