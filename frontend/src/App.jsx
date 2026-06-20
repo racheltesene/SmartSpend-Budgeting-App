@@ -240,9 +240,7 @@ function App() {
       budgetMessage = "No expenses recorded for this month yet.";
       budgetMessageClass = "budget-message neutral";
     } else if (expenses > currentBudget) {
-      budgetMessage = `Budget exceeded by $${Math.abs(remainingBudget).toFixed(
-        2
-      )}.`;
+      budgetMessage = `Budget exceeded by $${Math.abs(remainingBudget).toFixed(2)}.`;
       budgetMessageClass = "budget-message danger";
     } else if (budgetPercent >= 90) {
       budgetMessage = "Warning: You are close to reaching your budget limit.";
@@ -314,6 +312,50 @@ function App() {
 
   const transactionsInSelectedView = filteredTransactions.length;
 
+  const handleExportCSV = () => {
+    if (filteredTransactions.length === 0) {
+      alert("No transactions to export.");
+      return;
+    }
+
+    const headers = ["Date", "Category", "Type", "Amount", "Description"];
+
+    const rows = filteredTransactions.map((transaction) => [
+      transaction.transaction_date
+        ? transaction.transaction_date.split("T")[0]
+        : "",
+      transaction.category,
+      transaction.transaction_type,
+      transaction.amount,
+      transaction.description || "",
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row
+          .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+          .join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download =
+      selectedMonth === "All Months"
+        ? "smartspend_transactions.csv"
+        : `smartspend_transactions_${selectedMonth.replace(" ", "_")}.csv`;
+
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="app">
       <header>
@@ -350,6 +392,10 @@ function App() {
             </option>
           ))}
         </select>
+
+        <button type="button" onClick={handleExportCSV}>
+          Export CSV
+        </button>
       </section>
 
       <section className="budget-panel">
