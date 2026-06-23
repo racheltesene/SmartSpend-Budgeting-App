@@ -8,6 +8,18 @@ function App() {
   const [budgets, setBudgets] = useState([]);
   const [savingsGoals, setSavingsGoals] = useState([]);
 
+  const [recurringTransactions, setRecurringTransactions] = useState([]);
+
+  const [recurringForm, setRecurringForm] = useState({
+    amount: "",
+    category: "Rent",
+    transaction_type: "Expense",
+    description: "",
+    start_date: today,
+    frequency: "Monthly",
+    occurrences: 3,
+  });
+
   const [editingId, setEditingId] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("All Months");
   const [budgetAmount, setBudgetAmount] = useState("");
@@ -17,6 +29,9 @@ function App() {
   const [selectedGoalId, setSelectedGoalId] = useState("");
   const [contributionAmount, setContributionAmount] = useState("");
   const [contributionDate, setContributionDate] = useState(today);
+  const [selectedYear, setSelectedYear] = useState("All Years");
+  
+  const [expandedGroups, setExpandedGroups] = useState({});
 
   const [formData, setFormData] = useState({
     amount: "",
@@ -47,11 +62,21 @@ function App() {
       .catch((error) => console.error("Error fetching savings goals:", error));
   };
 
+  const fetchRecurringTransactions = () => {
+  fetch("http://localhost:5000/recurring-transactions")
+    .then((response) => response.json())
+    .then((data) => setRecurringTransactions(data))
+    .catch((error) =>
+      console.error("Error fetching recurring transactions:", error)
+    );
+};
+
   useEffect(() => {
-    fetchTransactions();
-    fetchBudgets();
-    fetchSavingsGoals();
-  }, []);
+  fetchTransactions();
+  fetchBudgets();
+  fetchSavingsGoals();
+  fetchRecurringTransactions();
+}, []);
 
   const formatMonth = (transactionDate) => {
     const date = new Date(transactionDate);
@@ -69,6 +94,15 @@ function App() {
       )
     ),
   ];
+
+  const availableYears = [
+  "All Years",
+  ...new Set(
+    transactions.map((transaction) =>
+      new Date(transaction.transaction_date).getFullYear()
+    )
+  ),
+];
 
   const filteredTransactions =
     selectedMonth === "All Months"
@@ -252,12 +286,24 @@ function App() {
   }
 
   const monthlyTotals = transactions.reduce((acc, transaction) => {
-    if (transaction.transaction_type === "Expense") {
+  if (transaction.transaction_type === "Expense") {
+
+    const transactionYear =
+      new Date(transaction.transaction_date).getFullYear();
+
+    if (
+      selectedYear === "All Years" ||
+      transactionYear === Number(selectedYear)
+    ) {
       const month = formatMonth(transaction.transaction_date);
-      acc[month] = (acc[month] || 0) + Number(transaction.amount);
+
+      acc[month] =
+        (acc[month] || 0) + Number(transaction.amount);
     }
-    return acc;
-  }, {});
+  }
+
+  return acc;
+}, {});
 
   const monthlyChartData = Object.keys(monthlyTotals).map((month) => ({
     month,
@@ -311,6 +357,75 @@ function App() {
       : "N/A";
 
   const transactionsInSelectedView = filteredTransactions.length;
+
+const groupedTransactions = {};
+
+filteredTransactions.forEach((transaction) => {
+  const description = transaction.description || "";
+
+  if (
+    description.includes("Recurring")
+  ) {
+    if (!groupedTransactions[description]) {
+      groupedTransactions[description] = [];
+    }
+
+    groupedTransactions[description].push(transaction);
+  }
+});
+
+  const handleRecurringChange = (e) => {
+  setRecurringForm({
+    ...recurringForm,
+    [e.target.name]: e.target.value,
+  });
+};
+
+const handleRecurringSubmit = async (e) => {
+  e.preventDefault();
+
+  await fetch("http://localhost:5000/recurring-transactions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(recurringForm),
+  });
+
+  setRecurringForm({
+    amount: "",
+    category: "Rent",
+    transaction_type: "Expense",
+    description: "",
+    start_date: today,
+    frequency: "Monthly",
+    occurrences: 3,
+  });
+
+  fetchRecurringTransactions();
+};
+
+const handleGenerateRecurring = async (id) => {
+  await fetch(
+    `http://localhost:5000/recurring-transactions/${id}/generate`,
+    {
+      method: "POST",
+    }
+  );
+
+  fetchTransactions();
+};
+
+const handleDeleteRecurring = async (id) => {
+  await fetch(
+    `http://localhost:5000/recurring-transactions/${id}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  fetchRecurringTransactions();
+};
 
   const handleExportCSV = () => {
     if (filteredTransactions.length === 0) {
@@ -509,42 +624,104 @@ function App() {
         <div className="panel">
           <h2>Recent Transactions</h2>
 
-          {filteredTransactions.length === 0 ? (
-            <p>No transactions found.</p>
-          ) : (
-            <div className="transaction-list">
-              {filteredTransactions.map((transaction) => (
-                <div className="transaction" key={transaction.id}>
-                  <div>
-                    <strong>{transaction.category}</strong>
-                    <p>{transaction.description}</p>
-                    <small>
-                      {transaction.transaction_date
-                        ? transaction.transaction_date.split("T")[0]
-                        : "No date"}
-                    </small>
-                  </div>
+{filteredTransactions.length === 0 ? (
+  <p>No transactions found.</p>
+) : (
+  <div className="transaction-list">
 
-                  <span>
-                    {transaction.transaction_type === "Expense" ? "-" : "+"}$
-                    {Number(transaction.amount).toFixed(2)}
-                  </span>
+    {Object.entries(groupedTransactions).map(([description, items]) => (
+      <div className="transaction" key={description}>
+        <div style={{ width: "100%" }}>
+          <strong
+            style={{ cursor: "pointer" }}
+            onClick={() =>
+              setExpandedGroups({
+                ...expandedGroups,
+                [description]: !expandedGroups[description],
+              })
+            }
+          >
+            {expandedGroups[description] ? "▼" : "▶"} {description} ({items.length})
+          </strong>
 
-                  <div className="transaction-actions">
-                    <button type="button" onClick={() => handleEdit(transaction)}>
-                      Edit
-                    </button>
+          {expandedGroups[description] && (
+  <div style={{ marginTop: "10px" }}>
+    {items.map((item) => (
+      <div className="recurring-detail-row" key={item.id}>
+        <span>
+          {item.transaction_date.split("T")[0]} • $
+          {Number(item.amount).toFixed(2)}
+        </span>
 
-                    <button type="button" onClick={() => handleDelete(transaction.id)}>
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+        <div className="transaction-actions">
+          <button
+            type="button"
+            onClick={() => handleEdit(item)}
+          >
+            Edit
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleDelete(item.id)}
+          >
+            Delete
+          </button>
         </div>
-      </section>
+      </div>
+    ))}
+  </div>
+)}
+        </div>
+      </div>
+    ))}
+
+    {filteredTransactions
+      .filter(
+        (transaction) =>
+          !(
+            transaction.description &&
+            transaction.description.includes("Recurring")
+          )
+      )
+      .map((transaction) => (
+        <div className="transaction" key={transaction.id}>
+          <div>
+            <strong>{transaction.category}</strong>
+            <p>{transaction.description}</p>
+            <small>
+              {transaction.transaction_date
+                ? transaction.transaction_date.split("T")[0]
+                : "No date"}
+            </small>
+          </div>
+
+          <span>
+            {transaction.transaction_type === "Expense" ? "-" : "+"}$
+            {Number(transaction.amount).toFixed(2)}
+          </span>
+
+          <div className="transaction-actions">
+            <button
+              type="button"
+              onClick={() => handleEdit(transaction)}
+            >
+              Edit
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleDelete(transaction.id)}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ))}
+  </div>
+)}
+</div>
+</section>
 
       <section className="stats-panel">
         <div className="stat-card">
@@ -596,6 +773,124 @@ function App() {
           </div>
         )}
       </section>
+
+      <section className="panel recurring-panel">
+  <h2>Recurring Transactions</h2>
+
+  <form onSubmit={handleRecurringSubmit}>
+    <label>Amount</label>
+    <input
+      type="number"
+      name="amount"
+      value={recurringForm.amount}
+      onChange={handleRecurringChange}
+      required
+    />
+
+    <label>Category</label>
+    <select
+      name="category"
+      value={recurringForm.category}
+      onChange={handleRecurringChange}
+    >
+      <option>Food</option>
+      <option>Rent</option>
+      <option>Transportation</option>
+      <option>Entertainment</option>
+      <option>School</option>
+      <option>Paycheck</option>
+      <option>Savings</option>
+      <option>Other</option>
+    </select>
+
+    <label>Type</label>
+    <select
+      name="transaction_type"
+      value={recurringForm.transaction_type}
+      onChange={handleRecurringChange}
+    >
+      <option>Expense</option>
+      <option>Income</option>
+    </select>
+
+    <label>Description</label>
+    <input
+      type="text"
+      name="description"
+      value={recurringForm.description}
+      onChange={handleRecurringChange}
+      placeholder="Rent, Paycheck, Spotify..."
+    />
+
+    <label>Start Date</label>
+    <input
+      type="date"
+      name="start_date"
+      value={recurringForm.start_date}
+      onChange={handleRecurringChange}
+      required
+    />
+
+    <label>Frequency</label>
+    <select
+      name="frequency"
+      value={recurringForm.frequency}
+      onChange={handleRecurringChange}
+    >
+      <option>Weekly</option>
+      <option>Biweekly</option>
+      <option>Monthly</option>
+    </select>
+
+    <label>Occurrences</label>
+    <input
+      type="number"
+      name="occurrences"
+      value={recurringForm.occurrences}
+      onChange={handleRecurringChange}
+      required
+    />
+
+    <button type="submit">
+      Create Recurring Transaction
+    </button>
+  </form>
+
+  <br />
+
+  {recurringTransactions.length === 0 ? (
+    <p>No recurring transactions yet.</p>
+  ) : (
+    recurringTransactions.map((item) => (
+      <div className="transaction" key={item.id}>
+        <div>
+          <strong>{item.description}</strong>
+          <p>
+            {item.frequency} • {item.occurrences} occurrences
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            handleGenerateRecurring(item.id)
+          }
+        >
+          Generate
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            handleDeleteRecurring(item.id)
+          }
+        >
+          Delete
+        </button>
+      </div>
+    ))
+  )}
+</section>
 
       <section className="panel savings-panel">
         <h2>Savings Goals</h2>
@@ -711,33 +1006,53 @@ function App() {
       </section>
 
       <section className="panel chart-panel">
-        <h2>Monthly Expense Chart</h2>
+        <div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "15px",
+  }}
+>
+  <h2>Monthly Expense Chart</h2>
 
-        {monthlyChartData.length === 0 ? (
-          <p>No expense data yet. Add an expense with a date to see the chart.</p>
-        ) : (
-          <div className="bar-chart">
-            {monthlyChartData.map((item) => (
-              <div className="bar-row" key={item.month}>
-                <div className="bar-label">{item.month}</div>
+  <select
+    value={selectedYear}
+    onChange={(e) => setSelectedYear(e.target.value)}
+  >
+    {availableYears.map((year) => (
+      <option key={year} value={year}>
+        {year}
+      </option>
+    ))}
+  </select>
+</div>
 
-                <div className="bar-track">
-                  <div
-                    className="bar-fill"
-                    style={{
-                      width: `${(item.amount / maxMonthlyAmount) * 100}%`,
-                    }}
-                  ></div>
-                </div>
+{monthlyChartData.length === 0 ? (
+  <p>No expense data for the selected year.</p>
+) : (
+  <div className="bar-chart">
+    {monthlyChartData.map((item) => (
+      <div className="bar-row" key={item.month}>
+        <div className="bar-label">{item.month}</div>
 
-                <div className="bar-amount">${item.amount.toFixed(2)}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-    </div>
-  );
+        <div className="bar-track">
+          <div
+            className="bar-fill"
+            style={{
+              width: `${(item.amount / maxMonthlyAmount) * 100}%`,
+            }}
+          ></div>
+        </div>
+
+        <div className="bar-amount">${item.amount.toFixed(2)}</div>
+      </div>
+    ))}
+  </div>
+)}
+</section>
+</div>
+);
 }
 
 export default App;

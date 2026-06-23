@@ -466,3 +466,41 @@ form button {
     font-size: 16px;
   }
 }
+
+.recurring-panel {
+  margin-top: 25px;
+}
+
+.recurring-panel form {
+  max-width: 500px;
+}
+
+.recurring-panel .transaction {
+  margin-top: 12px;
+}
+
+.recurring-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid #334155;
+}
+
+.recurring-detail-row span {
+  color: #94a3b8;
+}
+
+@media (max-width: 600px) {
+  .recurring-detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .recurring-detail-row .transaction-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
