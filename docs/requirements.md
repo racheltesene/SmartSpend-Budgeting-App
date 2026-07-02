@@ -2,123 +2,127 @@
 
 ## Project Overview
 
-SmartSpend is a full-stack budgeting and spending insight web application designed to help users track income, expenses, budgets, and spending trends. The application uses a React frontend, Express backend, and PostgreSQL database.
+SmartSpend is a full-stack budgeting and spending insight web application designed to help users track income, expenses, spending habits, budgeting goals, savings goals, recurring transactions, and financial trends. The application provides transaction management, budgeting tools, spending analytics, category breakdowns, monthly filtering, recurring transaction management, CSV exporting, and dashboard summaries to help users better understand and manage their finances.
+
+The application uses a React frontend, Express backend, and PostgreSQL database.
 
 ---
 
 # Must Have Requirements
 
-## 1. Transaction Creation
+## 1. Transaction Management
 
-Users can create income and expense transactions.
+Users can create, edit, and delete income and expense transactions.
 
-**Verification:** Add a transaction and verify it appears in the transaction list and database.
-
----
-
-## 2. Transaction Editing
-
-Users can edit existing transactions.
-
-**Verification:** Modify a transaction and verify the updated information appears correctly.
+**Verification:** Create, edit, and delete transactions and verify changes appear in the application dashboard and PostgreSQL database.
 
 ---
 
-## 3. Transaction Deletion
-
-Users can delete transactions.
-
-**Verification:** Delete a transaction and verify it is removed from the application.
-
----
-
-## 4. Transaction Categorization
+## 2. Transaction Categorization
 
 Users can assign categories to transactions.
 
-**Verification:** Create transactions with multiple categories and verify they display correctly.
+**Verification:** Create transactions using multiple categories and verify they display correctly.
 
 ---
 
-## 5. Dashboard Summary
+## 3. Financial Dashboard
 
 The application displays:
 
 - Total Income
 - Total Expenses
 - Current Balance
+- Largest Expense
+- Most Used Category
+- Transaction Count
 
 **Verification:** Dashboard values update automatically when transaction data changes.
 
 ---
 
-## 6. PostgreSQL Data Storage
+## 4. Persistent Data Storage
 
-Transaction data is stored in PostgreSQL.
+Transaction and budgeting data is stored in PostgreSQL.
 
-**Verification:** Restart the application and verify data persists.
-
----
-
-## 7. Monthly Transaction Filtering
-
-Users can filter transactions by month.
-
-**Verification:** Select different months and verify displayed transactions change appropriately.
+**Verification:** Restart the application and verify saved data remains available.
 
 ---
 
-## 8. Monthly Expense Visualization
+## 5. Monthly Analytics
 
-The application displays monthly expenses in a chart.
+Users can filter transactions by month and visualize monthly spending trends.
 
-**Verification:** Add expenses across multiple months and verify chart updates.
+**Verification:** Select different months and verify displayed transactions and spending charts update correctly.
 
 ---
 
-## 9. Spending Statistics
+## 6. Budget Goal Tracking
 
-The application displays:
+Users can create monthly budgets and track progress toward those budgets.
 
-- Largest Expense
-- Most Used Category
-- Number of Transactions Displayed
+**Verification:** Create a budget and verify progress tracking calculations update correctly.
 
-**Verification:** Statistics update automatically when transaction data changes.
+---
+
+## 7. Spending Insights
+
+The application provides automated spending insights based on user spending patterns and budget data.
+
+**Verification:** Demonstrate insight generation using sample transaction and budget data.
+
+---
+
+## 8. Category Spending Breakdown
+
+The application displays spending totals grouped by category.
+
+**Verification:** Demonstrate category spending summaries using multiple transactions.
 
 ---
 
 # Stretch Requirements
 
-## 1. Budget Goal Tracking
+## 1. Responsive Mobile Design
 
-Users can create and manage monthly budgets.
+The application supports mobile-friendly layouts and remains usable on smaller screen sizes.
 
-**Verification:** Create a budget and verify it is stored and displayed.
-
----
-
-## 2. Budget Warning System
-
-The application warns users when they approach or exceed their budget.
-
-**Verification:** Demonstrate under-budget, near-budget, and over-budget scenarios.
+**Verification:** Demonstrate the application functioning correctly in a mobile-sized browser window.
 
 ---
 
-## 3. Spending Insights
+## 2. CSV Export
 
-The application generates spending insights using transaction and budget data.
+Users can export transaction data to a CSV file.
 
-**Verification:** Insights update when spending behavior changes.
+**Verification:** Export transaction data and verify the CSV contents match stored transaction data.
 
 ---
 
-## 4. Category Spending Breakdown
+## 3. Savings Goal Tracking
 
-The application displays spending totals grouped by category.
+Users can create savings goals and track progress toward achieving them.
 
-**Verification:** Category totals update automatically based on filtered transactions.
+**Verification:** Create a savings goal and verify progress updates when contributions are added.
+
+---
+
+## 4. Recurring Transactions
+
+Users can create recurring transactions that automatically populate future months.
+
+**Verification:** Create a recurring transaction and verify future entries are generated according to user settings.
+
+---
+
+# Additional Polish Features
+
+- Transaction search
+- Collapsible recurring transaction groups
+- Edit/Delete options for generated recurring transaction entries
+- Year filter for Monthly Expense Chart
+- Mobile-friendly UI improvements
+- Improved chart and transaction organization
 
 ---
 
@@ -126,25 +130,38 @@ The application displays spending totals grouped by category.
 
 ## Completed
 
-- Transaction creation
-- Transaction editing
-- Transaction deletion
+- Transaction creation, editing, and deletion
 - Transaction categorization
 - PostgreSQL database integration
 - Dashboard summaries
+- Financial statistics
 - Monthly transaction filtering
-- Monthly expense chart
-- Spending statistics
-- Budget tracking
+- Monthly expense visualization
+- Budget goal tracking
 - Budget progress bar
 - Budget warning system
 - Spending insights
-
-## In Progress
-
 - Category spending breakdown
-- Additional dashboard analytics
-- Mobile responsiveness improvements
+- Responsive mobile design
+- CSV export
+- Savings goal tracking
+- Savings contributions recorded as expenses
+- Recurring transaction creation
+- Recurring transaction generation
+- Collapsible recurring transaction groups
+- Edit/Delete options for recurring entries
+- Year-based filtering for the Monthly Expense Chart
+- Transaction search
+- Comprehensive feature testing
+- User interface refinements
+- Application stability improvements
+
+## Remaining Work: Week 12
+
+- Final code cleanup and organization
+- Final documentation review
+- Prepare and practice final demonstration
+- Perform final verification of all requirements
 
 ---
 
@@ -168,31 +185,24 @@ The application displays spending totals grouped by category.
 
 - VS Code
 - GitHub
+- pgAdmin
 
 ---
 
 # Project Architecture
 
-User Input
-
-↓
-
-React Frontend
-
-↓
-
-Express API
-
-↓
-
-PostgreSQL Database
-
-↓
-
+User Input  
+↓  
+React Frontend  
+↓  
+Express API  
+↓  
+PostgreSQL Database  
+↓  
 Dashboard Output
 
 ---
 
 # Last Updated
 
-Week 7 Development
+Week 11

@@ -2,138 +2,218 @@
 
 ## Overview
 
-SmartSpend is a full-stack budgeting web application designed to help users track income, expenses, spending habits, and budgeting goals. The application provides financial summaries, monthly spending analytics, budget tracking, and spending insights through an interactive dashboard.
+SmartSpend is a full-stack budgeting web application designed to help users manage their personal finances. Users can track income and expenses, create monthly budgets, monitor savings goals, schedule recurring transactions, and analyze spending trends through an interactive dashboard.
+
+The application is built using React, Express, Node.js, and PostgreSQL, following a client-server architecture with REST APIs for communication.
 
 ---
 
-## Current Features
+# Features
 
-### Transaction Management
+## Transaction Management
 
-- Add transactions
-- Edit transactions
+- Add income and expense transactions
+- Edit existing transactions
 - Delete transactions
 - Categorize transactions
 - Track transaction dates
-
-### Dashboard
-
-- Total income summary
-- Total expense summary
-- Current balance calculation
-- Largest expense statistic
-- Most used category statistic
-- Transaction count statistic
-
-### Budget Tracking
-
-- Monthly budget creation
-- Budget storage by month
-- Remaining budget calculations
-- Budget progress bar
-- Budget warning messages
-
-### Analytics
-
-- Monthly transaction filtering
-- Monthly expense chart
-- Spending insights
+- Search transactions
 
 ---
 
-## Tech Stack
+## Dashboard
 
-### Frontend
+Displays real-time financial summaries including:
+
+- Total Income
+- Total Expenses
+- Current Balance
+- Largest Expense
+- Most Used Category
+- Transaction Count
+
+Dashboard statistics update automatically whenever transaction data changes.
+
+---
+
+## Budget Tracking
+
+- Create monthly budgets
+- Track remaining budget
+- Budget progress bar
+- Budget warning messages
+- Monthly budget persistence
+
+---
+
+## Spending Analytics
+
+- Monthly transaction filtering
+- Monthly expense chart
+- Year filtering for expense chart
+- Category spending breakdown
+- Automated spending insights
+
+---
+
+## Savings Goals
+
+- Create savings goals
+- Track savings progress
+- Progress bars
+- Record savings contributions
+- Automatically log contributions as expense transactions
+
+---
+
+## Recurring Transactions
+
+- Create recurring income or expense transactions
+- Automatically generate future transaction entries
+- Collapse recurring transaction groups
+- Edit generated recurring entries
+- Delete generated recurring entries
+
+---
+
+## Data Export
+
+- Export displayed transactions to CSV
+
+---
+
+## Responsive Design
+
+- Mobile-friendly interface
+- Responsive layouts for smaller screen sizes
+
+---
+
+# Tech Stack
+
+## Frontend
 
 - React
 - CSS
 
-### Backend
+## Backend
 
 - Node.js
 - Express
+- REST API
 
-### Database
+## Database
 
 - PostgreSQL
 
-### Development Tools
+## Development Tools
 
 - GitHub
 - VS Code
+- pgAdmin
 
 ---
 
-## Current Progress
+# Project Progress
 
-### Project Setup
-
-- [x] Proposal completed
-- [x] GitHub repository created
-- [x] Requirements document created
-- [x] Frontend setup completed
-- [x] Backend setup completed
-- [x] PostgreSQL database configured
+## Completed
 
 ### Core Features
 
-- [x] Transaction creation
-- [x] Transaction editing
-- [x] Transaction deletion
-- [x] Transaction categorization
-- [x] Transaction date tracking
-- [x] Dashboard summaries
-- [x] Monthly filtering
-- [x] Monthly expense chart
-- [x] Spending statistics
+- ✅ Transaction creation
+- ✅ Transaction editing
+- ✅ Transaction deletion
+- ✅ Transaction categorization
+- ✅ Transaction search
+- ✅ Transaction date tracking
+
+### Dashboard
+
+- ✅ Total Income
+- ✅ Total Expenses
+- ✅ Current Balance
+- ✅ Largest Expense
+- ✅ Most Used Category
+- ✅ Transaction Count
+
+### Budget Features
+
+- ✅ Monthly budgets
+- ✅ Budget progress tracking
+- ✅ Budget warning system
+
+### Analytics
+
+- ✅ Monthly filtering
+- ✅ Monthly expense chart
+- ✅ Year filtering
+- ✅ Category spending breakdown
+- ✅ Spending insights
 
 ### Stretch Features
 
-- [x] Budget tracking
-- [x] Budget progress bar
-- [x] Budget warning system
-- [x] Spending insights
-- [ ] Category spending breakdown
-- [ ] Mobile responsiveness improvements
+- ✅ Responsive mobile design
+- ✅ CSV export
+- ✅ Savings goal tracking
+- ✅ Recurring transactions
 
 ---
 
-## Application Architecture
+# Application Architecture
 
+```
 User Input
-
-↓
-
+      │
+      ▼
 React Frontend
-
-↓
-
-Express API
-
-↓
-
+      │
+ REST API (HTTP)
+      │
+      ▼
+Express Backend
+      │
+      ▼
 PostgreSQL Database
-
-↓
-
-Dashboard Output
-
----
-
-## Planned Work
-
-- Category spending breakdown panel
-- Additional dashboard analytics
-- Mobile responsiveness improvements
-- Final testing and bug fixes
-- Final project documentation
-- Final demonstration preparation
+      │
+      ▼
+Dashboard & Analytics
+```
 
 ---
 
-## Running the Project
+# REST API Endpoints
 
-### Backend
+## Transactions
+
+- GET `/transactions`
+- POST `/transactions`
+- PUT `/transactions/:id`
+- DELETE `/transactions/:id`
+
+## Budgets
+
+- GET `/budgets`
+- POST `/budgets`
+
+## Savings Goals
+
+- GET `/savings-goals`
+- POST `/savings-goals`
+- PUT `/savings-goals/:id/contribute`
+- DELETE `/savings-goals/:id`
+
+## Recurring Transactions
+
+- GET `/recurring-transactions`
+- POST `/recurring-transactions`
+- POST `/recurring-transactions/:id/generate`
+- DELETE `/recurring-transactions/:id`
+
+---
+
+# Running the Project
+
+## Backend
 
 ```bash
 cd backend
@@ -141,7 +221,15 @@ npm install
 node server.js
 ```
 
-### Frontend
+The backend will run on:
+
+```
+http://localhost:5000
+```
+
+---
+
+## Frontend
 
 ```bash
 cd frontend
@@ -149,10 +237,32 @@ npm install
 npm run dev
 ```
 
+The frontend will run on:
+
+```
+http://localhost:5173
+```
+
 ---
 
-## Author
+# Future Improvements
 
-Rachel Tesene
+Potential enhancements include:
 
-BYU-Idaho CSE 499 Senior Project
+- User authentication
+- Cloud deployment
+- Email reminders for recurring transactions
+- Multiple user accounts
+- Data visualization improvements
+
+---
+
+# Author
+
+**Rachel Tesene**
+
+BYU–Idaho
+
+CSE 499 Senior Project
+
+Spring 2026
