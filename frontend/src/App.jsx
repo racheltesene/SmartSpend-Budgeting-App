@@ -24,6 +24,8 @@ function App() {
   const [selectedMonth, setSelectedMonth] = useState("All Months");
   const [budgetAmount, setBudgetAmount] = useState("");
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [goalName, setGoalName] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
   const [selectedGoalId, setSelectedGoalId] = useState("");
@@ -104,13 +106,24 @@ function App() {
   ),
 ];
 
-  const filteredTransactions =
-    selectedMonth === "All Months"
-      ? transactions
-      : transactions.filter(
-          (transaction) =>
-            formatMonth(transaction.transaction_date) === selectedMonth
-        );
+  const monthFilteredTransactions =
+  selectedMonth === "All Months"
+    ? transactions
+    : transactions.filter(
+        (transaction) =>
+          formatMonth(transaction.transaction_date) === selectedMonth
+      );
+
+const filteredTransactions = monthFilteredTransactions.filter((transaction) => {
+  const searchText = searchTerm.toLowerCase();
+
+  return (
+    transaction.category.toLowerCase().includes(searchText) ||
+    transaction.transaction_type.toLowerCase().includes(searchText) ||
+    (transaction.description || "").toLowerCase().includes(searchText) ||
+    String(transaction.amount).includes(searchText)
+  );
+});
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -623,6 +636,14 @@ const handleDeleteRecurring = async (id) => {
 
         <div className="panel">
           <h2>Recent Transactions</h2>
+
+          <input
+            type="text"
+            placeholder="Search transactions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
 
 {filteredTransactions.length === 0 ? (
   <p>No transactions found.</p>

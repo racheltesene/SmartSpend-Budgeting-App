@@ -504,3 +504,15 @@ form button {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 15px;
+  box-sizing: border-box;
+}
