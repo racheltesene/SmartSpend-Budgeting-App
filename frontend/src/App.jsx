@@ -4,6 +4,10 @@ import "./App.css";
 function App() {
   const today = new Date().toISOString().split("T")[0];
 
+  // ==========================================
+  // State Variables
+  // ==========================================
+
   const [transactions, setTransactions] = useState([]);
   const [budgets, setBudgets] = useState([]);
   const [savingsGoals, setSavingsGoals] = useState([]);
@@ -42,6 +46,10 @@ function App() {
     description: "",
     transaction_date: today,
   });
+
+  // ==========================================
+  // Data Fetching
+  // ==========================================
 
   const fetchTransactions = () => {
     fetch("http://localhost:5000/transactions")
@@ -117,6 +125,10 @@ function App() {
 const filteredTransactions = monthFilteredTransactions.filter((transaction) => {
   const searchText = searchTerm.toLowerCase();
 
+  // ==========================================
+  // User Interface
+  // ==========================================
+
   return (
     transaction.category.toLowerCase().includes(searchText) ||
     transaction.transaction_type.toLowerCase().includes(searchText) ||
@@ -124,6 +136,10 @@ const filteredTransactions = monthFilteredTransactions.filter((transaction) => {
     String(transaction.amount).includes(searchText)
   );
 });
+
+  // ==========================================
+  // Transaction Management
+  // ==========================================
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -172,12 +188,18 @@ const filteredTransactions = monthFilteredTransactions.filter((transaction) => {
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm("Delete this transaction?")) return;
+
     await fetch(`http://localhost:5000/transactions/${id}`, {
       method: "DELETE",
     });
 
     fetchTransactions();
   };
+
+  // ==========================================
+  // Budget Management
+  // ==========================================
 
   const handleBudgetSubmit = async (e) => {
     e.preventDefault();
@@ -201,6 +223,10 @@ const filteredTransactions = monthFilteredTransactions.filter((transaction) => {
     setBudgetAmount("");
     fetchBudgets();
   };
+
+  // ==========================================
+  // Savings Goal Management
+  // ==========================================
 
   const handleSavingsGoalSubmit = async (e) => {
     e.preventDefault();
@@ -250,12 +276,18 @@ const filteredTransactions = monthFilteredTransactions.filter((transaction) => {
   };
 
   const handleDeleteSavingsGoal = async (id) => {
+    if (!window.confirm("Delete this savings goal?")) return;
+
     await fetch(`http://localhost:5000/savings-goals/${id}`, {
       method: "DELETE",
     });
 
     fetchSavingsGoals();
   };
+
+  // ==========================================
+  // Dashboard Calculations
+  // ==========================================
 
   const income = filteredTransactions
     .filter((t) => t.transaction_type === "Income")
@@ -387,6 +419,10 @@ filteredTransactions.forEach((transaction) => {
   }
 });
 
+  // ==========================================
+  // Recurring Transactions
+  // ==========================================
+
   const handleRecurringChange = (e) => {
   setRecurringForm({
     ...recurringForm,
@@ -430,6 +466,8 @@ const handleGenerateRecurring = async (id) => {
 };
 
 const handleDeleteRecurring = async (id) => {
+  if (!window.confirm("Delete this recurring transaction?")) return;
+
   await fetch(
     `http://localhost:5000/recurring-transactions/${id}`,
     {
@@ -439,6 +477,10 @@ const handleDeleteRecurring = async (id) => {
 
   fetchRecurringTransactions();
 };
+
+  // ==========================================
+  // CSV Export
+  // ==========================================
 
   const handleExportCSV = () => {
     if (filteredTransactions.length === 0) {

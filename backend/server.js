@@ -1,3 +1,6 @@
+// ======================================================
+// Imports & Configuration
+// ======================================================
 const express = require("express");
 const cors = require("cors");
 const pool = require("./db");
@@ -7,10 +10,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ======================================================
+// Health Check
+// ======================================================
 app.get("/", (req, res) => {
   res.send("SmartSpend API running");
 });
 
+// ======================================================
+// Transaction Routes
+// ======================================================
 app.get("/transactions", async (req, res) => {
   try {
     const result = await pool.query(
@@ -81,6 +90,9 @@ app.delete("/transactions/:id", async (req, res) => {
   }
 });
 
+// ======================================================
+// Budget Routes
+// ======================================================
 app.get("/budgets", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM budgets ORDER BY id DESC");
@@ -111,6 +123,9 @@ app.post("/budgets", async (req, res) => {
   }
 });
 
+// ======================================================
+// Savings Goal Routes
+// ======================================================
 app.get("/savings-goals", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM savings_goals ORDER BY id DESC");
@@ -185,7 +200,9 @@ app.delete("/savings-goals/:id", async (req, res) => {
   }
 });
 
-/* Recurring Transactions */
+// ======================================================
+// Recurring Transaction Routes
+// ======================================================
 
 app.get("/recurring-transactions", async (req, res) => {
   try {
@@ -247,6 +264,9 @@ app.delete("/recurring-transactions/:id", async (req, res) => {
   }
 });
 
+// ======================================================
+// Helper Functions
+// ======================================================
 const addDays = (date, days) => {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
@@ -317,6 +337,12 @@ app.post("/recurring-transactions/:id/generate", async (req, res) => {
   }
 });
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+// ======================================================
+// Start Server
+// ======================================================
+
+const PORT = 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
